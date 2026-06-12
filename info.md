@@ -92,13 +92,18 @@ Single record, `stringParam` = one or more plan definitions concatenated with `.
 ```
 <body>,<action>,<startTime HHMM>,<duration min>,<daysBitmask>,<fertLiters>,<waterQtyLiters>,<waterBeforeLiters>,<fertBody>
 ```
-- `daysBitmask`: 7-bit mask over (א,ב,ג,ד,ה,ו,ש), `127` = all days.
+- `daysBitmask`: 7-bit mask over (א,ב,ג,ד,ה,ו,ש) = (Sun,Mon,Tue,Wed,Thu,Fri,Sat),
+  bit0 (LSB) = Sunday ... bit6 = Saturday. `127` = 0b1111111 = all days.
+  **Confirmed 2026-06-12**: restricting plan 5.1 to Monday+Tuesday produced
+  `daysBitmask = 6` (`0b0000110` = bits 1,2 = Mon,Tue), matching this
+  mapping. See `samples/readPlans_dayrestricted.json`.
 - `fertBody`/`fertLiters` only present when fertilization is configured (plan "1.2" doses 8L via valve 3, with 100L water-before).
 - `dateTime` on this record = timestamp of last plan edit (not a schedule occurrence).
 
 Current plans on this site:
 - **Plan 1.2** (body 1): 04:40 start, 147 min, all days, 60000L limit, 100L water-before, 8L fert via valve 3.
-- **Plan 5.1** (body 5/שכן): 04:40 start, 147 min, all days, 0L (no flow meter / unmetered).
+- **Plan 5.1** (body 5/שכן): 04:40 start, 147 min, **Monday+Tuesday only**
+  (`daysBitmask = 6`), 0L (no flow meter / unmetered).
 
 #### `/api/readReport/{siteId}/{startDate M-D-YY}/{endDate M-D-YY}`
 Daily history records, `stringParam` format:

@@ -60,6 +60,9 @@ cost), this integration:
 - Once a day, it reads the daily usage report to populate "Water Used
   Today".
 
+Login session cookies are held in memory only; the integration
+re-authenticates automatically whenever the session expires.
+
 ## Installation
 
 ### HACS (custom repository)
@@ -86,15 +89,9 @@ Configuration is done entirely via the UI:
 
 ## Known limitations / open items
 
-- The mapping from the plan "days" bitmask to weekdays is based on an
-  assumption (bit 0 = Sunday) that has only been validated for the
-  "every day" case (`127`). If you have a plan that doesn't run every
-  day and the run-window detection seems off, please open an issue.
 - "Water Used Today" reflects zone 1.2 (`TE,1,2,...` report entries).
   If your setup uses different zone/action numbers, this will need to be
   made configurable.
-- Login session cookies are held in memory only; the integration
-  re-authenticates automatically when the session expires.
 - The `suspended` status reflects only the current on/off state of the
   controller's enabled flag - it cannot show how many days remain on a
   portal-initiated suspend, since the API doesn't expose that.

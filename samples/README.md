@@ -23,6 +23,7 @@ The real `devId`/site ID has been replaced everywhere with the placeholder
 | `apiCall_running.json` | `POST /api/call` (live query) | Live-query response during the same manual run: `VALVES:110001_,_111111..OK..$CTR:181246,FLOW:9000$CTR2:158,FLOW2:0$FCTR1:3,FLOW:0..$ENA:1..$Day:6_Time:10:23:47_DYC:1435..$..MAN#1:57,400;..Bound:1->2..$`. |
 | `readRaw_suspended.json` | `GET /api/readRaw/{siteId}` | First 40 entries, captured right after **suspending irrigation for 12 days via the portal**. Most recent entries show `ENA:0..OK$ENA:11..OK$ENA:11..$` (toggle confirmation) followed by `STAT:000000,CTR:181410,L/H:0,ENA:11;` - i.e. `ENA` flips from `1` (normal) to `11` (suspended). No field anywhere encodes the remaining suspend duration. Also includes `BOUNDS:..1:2,1,1....OK..$`, confirming the valve 1->2 binding configuration. |
 | `apiCall_suspended.json` | `POST /api/call` (live query) | Live-query response while suspended: `...ENA:11..$..NO_TASK..$` (vs `ENA:1..$` when not suspended). |
+| `readPlans_dayrestricted.json` | `GET /api/readPlans/{siteId}` | Captured after restricting plan 5.1 to **Monday+Tuesday only**: `...3..5,1,0440,147,6,0,0,0`, i.e. `daysBitmask = 6` (`0b0000110` = bits 1,2 = Mon,Tue). Confirms the bit0=Sunday mapping used in `_async_refresh_windows`. |
 
 See `info.md` in the repo root for the full field-by-field breakdown of these
 formats.

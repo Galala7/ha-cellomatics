@@ -132,9 +132,10 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
         today = dt_util.now().date()
 
         # Hebrew week order in the UI is א(Sun) ב(Mon) ג(Tue) ד(Wed) ה(Thu) ו(Fri) ש(Sat).
-        # Assumption (unverified against a non-"every day" plan): bit0 (LSB) = Sunday
-        # ... bit6 = Saturday. 127 = 0b1111111 = all days, which covers the
-        # currently configured plans.
+        # bit0 (LSB) = Sunday ... bit6 = Saturday. 127 = 0b1111111 = all days.
+        # Confirmed 2026-06-12 against a plan restricted to Monday+Tuesday
+        # (daysBitmask = 6 = 0b0000110 = bits 1,2 = Mon,Tue). See
+        # samples/readPlans_dayrestricted.json.
         weekday = today.weekday()  # Monday=0 .. Sunday=6
         sun_index = (weekday + 1) % 7
 
