@@ -1,0 +1,110 @@
+# Example Lovelace dashboard card for the Cellomatics Irrigation integration.
+#
+# Replace `0501234567` below with your actual site ID (or, if you renamed the
+# device, with whatever prefix Home Assistant generated for its entity IDs -
+# check Settings -> Devices & Services -> Cellomatics Irrigation -> Entities
+# to confirm the exact entity_ids on your system).
+#
+# Add this as a single card via the dashboard UI: Edit Dashboard -> Add Card
+# -> "Manual" (YAML), then paste the contents of one of the cards below
+# (or the whole vertical-stack for everything at once).
+
+views:
+  - title: Irrigation
+    cards:
+      - type: vertical-stack
+        cards:
+          # --- Status header -------------------------------------------------
+          - type: entities
+            title: Cellomatics Irrigation
+            show_header_toggle: false
+            entities:
+              - entity: sensor.cellomatics_irrigation_0501234567_status
+                name: Status
+                icon: mdi:sprinkler-variant
+              - type: attribute
+                entity: sensor.cellomatics_irrigation_0501234567_status
+                attribute: last_update
+                name: Last updated
+                icon: mdi:clock-outline
+              - entity: sensor.cellomatics_irrigation_0501234567_water_used_today
+                name: Water used today
+              - entity: sensor.cellomatics_irrigation_0501234567_battery
+                name: Battery
+
+          # --- Valves ----------------------------------------------------------
+          # Shows all 6; if your controller has fewer (4-5), the missing
+          # valve entities simply won't exist and can be removed below.
+          - type: glance
+            title: Valves
+            show_state: true
+            state_color: true
+            entities:
+              - entity: binary_sensor.cellomatics_irrigation_0501234567_valve_1
+                name: "1"
+              - entity: binary_sensor.cellomatics_irrigation_0501234567_valve_2
+                name: "2"
+              - entity: binary_sensor.cellomatics_irrigation_0501234567_valve_3
+                name: "3"
+              - entity: binary_sensor.cellomatics_irrigation_0501234567_valve_4
+                name: "4"
+              - entity: binary_sensor.cellomatics_irrigation_0501234567_valve_5
+                name: "5"
+              - entity: binary_sensor.cellomatics_irrigation_0501234567_valve_6
+                name: "6"
+
+          # --- Flow ------------------------------------------------------------
+          - type: entities
+            title: Flow
+            entities:
+              - entity: sensor.cellomatics_irrigation_0501234567_main_flow_rate
+                name: Main flow rate
+              - entity: sensor.cellomatics_irrigation_0501234567_main_flow_counter
+                name: Main flow total
+              - entity: sensor.cellomatics_irrigation_0501234567_zone_2_flow_rate
+                name: Zone 2 flow rate
+              - entity: sensor.cellomatics_irrigation_0501234567_zone_2_flow_counter
+                name: Zone 2 flow total
+              - entity: sensor.cellomatics_irrigation_0501234567_fertilizer_flow_rate
+                name: Fertilizer flow rate
+              - entity: sensor.cellomatics_irrigation_0501234567_fertilizer_flow_counter
+                name: Fertilizer flow total
+
+          # --- Manual refresh buttons -------------------------------------------
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Refresh (passive)
+                icon: mdi:refresh
+                tap_action:
+                  action: call-service
+                  service: cellomatics.force_passive_update
+                  target:
+                    entity_id: sensor.cellomatics_irrigation_0501234567_status
+              - type: button
+                name: Refresh (active)
+                icon: mdi:cellphone-wireless
+                tap_action:
+                  action: call-service
+                  service: cellomatics.force_active_update
+                  target:
+                    entity_id: sensor.cellomatics_irrigation_0501234567_status
+                hold_action:
+                  action: none
+
+      # --- Optional: status badge / banner --------------------------------------
+      # A markdown card that turns red when the controller is suspended.
+      - type: markdown
+        content: >-
+          {% set status =
+          states('sensor.cellomatics_irrigation_0501234567_status') %}
+          {% if status == 'suspended' %}
+          ## ⚠️ Irrigation suspended
+          The controller has irrigation suspended (portal "suspend for N
+          days" feature). No scheduled watering will run until it's
+          re-enabled from the Cellomatics portal.
+          {% elif status == 'running' %}
+          ## 💧 Irrigation running
+          {% else %}
+          ## ✅ Idle
+          {% endif %}

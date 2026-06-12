@@ -87,6 +87,15 @@ Configuration is done entirely via the UI:
 3. Enter your portal username, password, and irrigation site ID
    (e.g. `0501234567`).
 
+## Example dashboard
+
+See [`examples/lovelace.yaml`](examples/lovelace.yaml) for a sample Lovelace
+dashboard card showing status, valves, flow rates, battery, water used
+today, and buttons to trigger the `force_passive_update` /
+`force_active_update` services. Update the entity IDs in the example to
+match your installation (check **Settings → Devices & Services →
+Cellomatics Irrigation → Entities**).
+
 ## Known limitations / open items
 
 - "Water Used Today" reflects zone 1.2 (`TE,1,2,...` report entries).
