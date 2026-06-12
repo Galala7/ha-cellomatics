@@ -1,0 +1,68 @@
+[
+  {
+    "devId": "0501234567",
+    "stringParam": "1",
+    "stringParam_2": "15000",
+    "stringParam_3": null,
+    "stringParam_4": null,
+    "intParam": "1",
+    "dateTime": null,
+    "devIds": null,
+    "flowRate": null
+  },
+  {
+    "devId": "0501234567",
+    "stringParam": "2",
+    "stringParam_2": "0",
+    "stringParam_3": null,
+    "stringParam_4": null,
+    "intParam": "2",
+    "dateTime": null,
+    "devIds": null,
+    "flowRate": null
+  },
+  {
+    "devId": "0501234567",
+    "stringParam": "דשן",
+    "stringParam_2": "0",
+    "stringParam_3": null,
+    "stringParam_4": null,
+    "intParam": "3",
+    "dateTime": null,
+    "devIds": null,
+    "flowRate": null
+  },
+  {
+    "devId": "0501234567",
+    "stringParam": "4",
+    "stringParam_2": "0",
+    "stringParam_3": null,
+    "stringParam_4": null,
+    "intParam": "4",
+    "dateTime": null,
+    "devIds": null,
+    "flowRate": null
+  },
+  {
+    "devId": "0501234567",
+    "stringParam": "שכן",
+    "stringParam_2": "0",
+    "stringParam_3": null,
+    "stringParam_4": null,
+    "intParam": "5",
+    "dateTime": null,
+    "devIds": null,
+    "flowRate": null
+  },
+  {
+    "devId": "0501234567",
+    "stringParam": "ראשי",
+    "stringParam_2": "0",
+    "stringParam_3": null,
+    "stringParam_4": null,
+    "intParam": "6",
+    "dateTime": null,
+    "devIds": null,
+    "flowRate": null
+  }
+]
