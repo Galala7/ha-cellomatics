@@ -96,9 +96,17 @@ class CellomaticsBatterySensor(CellomaticsEntity, SensorEntity):
 
 
 class CellomaticsStatusSensor(CellomaticsEntity, SensorEntity):
-    """Current irrigation status (idle/running)."""
+    """Current irrigation status: idle, running, or suspended.
+
+    "suspended" reflects the controller's ENA flag being non-1, e.g. while
+    the portal's "suspend irrigation for N days" feature is active. It takes
+    priority over idle/running, since a suspended controller won't actually
+    run any irrigation regardless of the task-status line.
+    """
 
     _attr_name = "Status"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["idle", "running", "suspended"]
 
     def __init__(self, coordinator: CellomaticsCoordinator, site_id: str) -> None:
         super().__init__(coordinator, site_id)
@@ -114,6 +122,9 @@ class CellomaticsStatusSensor(CellomaticsEntity, SensorEntity):
         raw = self.coordinator.data.get("raw")
         if raw:
             attrs["raw"] = raw
+        enabled = self.coordinator.data.get("enabled")
+        if enabled is not None:
+            attrs["enabled"] = enabled
         last_update = self.coordinator.data.get("last_update")
         if last_update:
             attrs["last_update"] = last_update

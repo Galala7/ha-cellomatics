@@ -179,12 +179,15 @@ def test_passive_update_suspended() -> None:
             data["status"] = "running"
             break
 
+    if data.get("enabled") is False:
+        data["status"] = "suspended"
+
     print("passive update (suspended) ->", data)
     assert data.get("valves") == [False, False, False, False, False, False]
     assert data.get("ctr_main") == 181410
     assert data.get("flow_main") == 0
     assert data.get("enabled") is False
-    assert data.get("status") == "idle"
+    assert data.get("status") == "suspended"
 
 
 def test_active_update() -> None:
@@ -233,8 +236,13 @@ def test_active_update_suspended() -> None:
     assert match
     enabled = match.group(1) == _ENA_ENABLED_VALUE
 
-    print("active update (suspended) -> enabled =", enabled)
+    status = "idle" if "NO_TASK" in resp else "running"
+    if enabled is False:
+        status = "suspended"
+
+    print("active update (suspended) -> enabled =", enabled, "status =", status)
     assert enabled is False
+    assert status == "suspended"
 
 
 def test_daily_summary() -> None:

@@ -211,6 +211,8 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
             data["enabled"] = match.group(1) == _ENA_ENABLED_VALUE
 
         data["status"] = "idle" if "NO_TASK" in resp else "running"
+        if data.get("enabled") is False:
+            data["status"] = "suspended"
         data["raw"] = resp
         data["last_update"] = dt_util.now().isoformat()
 
@@ -282,6 +284,11 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
             if "Output_" in string_param or "MAN#" in string_param:
                 data["status"] = "running"
                 break
+
+        # A suspended controller overrides idle/running - it won't actually
+        # run any irrigation regardless of what the task-status line says.
+        if data.get("enabled") is False:
+            data["status"] = "suspended"
 
         data["last_update"] = dt_util.now().isoformat()
 

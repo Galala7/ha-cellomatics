@@ -24,5 +24,5 @@ The real `devId`/site ID has been replaced everywhere with the placeholder
 | `readRaw_suspended.json` | `GET /api/readRaw/{siteId}` | First 40 entries, captured right after **suspending irrigation for 12 days via the portal**. Most recent entries show `ENA:0..OK$ENA:11..OK$ENA:11..$` (toggle confirmation) followed by `STAT:000000,CTR:181410,L/H:0,ENA:11;` - i.e. `ENA` flips from `1` (normal) to `11` (suspended). No field anywhere encodes the remaining suspend duration. Also includes `BOUNDS:..1:2,1,1....OK..$`, confirming the valve 1->2 binding configuration. |
 | `apiCall_suspended.json` | `POST /api/call` (live query) | Live-query response while suspended: `...ENA:11..$..NO_TASK..$` (vs `ENA:1..$` when not suspended). |
 
-See `indo.md` in the repo root for the full field-by-field breakdown of these
+See `info.md` in the repo root for the full field-by-field breakdown of these
 formats.
