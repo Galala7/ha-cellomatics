@@ -74,7 +74,14 @@ async def _async_coordinators_for_call(
 
     If no target is given, applies to every configured Cellomatics entry.
     """
-    entry_ids = await service.async_extract_config_entry_ids(hass, call)
+    # HA Core deprecated passing `hass` to async_extract_config_entry_ids
+    # (removal in 2026.10); fall back to the old signature on older cores
+    # that don't accept the new hass-less form yet.
+    try:
+        entry_ids = await service.async_extract_config_entry_ids(call)
+    except TypeError:
+        entry_ids = await service.async_extract_config_entry_ids(hass, call)
+
     if not entry_ids:
         entry_ids = set(hass.data.get(DOMAIN, {}))
 
