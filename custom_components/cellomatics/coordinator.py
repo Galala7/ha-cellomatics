@@ -6,12 +6,13 @@ Polling strategy (push-based, not on a fixed interval):
   computed (plan start time -> start + duration).
 - On every quarter hour (xx:00, xx:15, xx:30, xx:45) that falls inside a run
   window:
-    - xx:00            -> passive read (dashboardReadRaw) - the controller
-                          pushes its own hourly update around this time.
+    - xx:00            -> passive read (readRaw) - the controller pushes its
+                          own hourly update around this time.
     - xx:15/30/45      -> active poll (/api/call) - live valve states + flow
                           rates.
 - Every hour at xx:05 (always, regardless of run windows) a passive read
-  keeps battery level / idle status fresh without waking the device.
+  (readRaw) keeps battery level, valve/flow state and idle/running status
+  fresh without waking the device.
 - Every day at 23:55, /api/readReport is read for today and the day's total
   water usage (zone 1.2) is published.
 
@@ -206,22 +207,25 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
 
     async def _async_passive_update(self) -> None:
         try:
-            entries = await self.api.async_get(
-                f"/api/dashboardReadRaw/{self.api.site_id}"
-            )
+            entries = await self.api.async_get(f"/api/readRaw/{self.api.site_id}")
         except Exception as err:  # noqa: BLE001
             _LOGGER.warning("Cellomatics: passive poll failed: %s", err)
             return
 
         if not isinstance(entries, list):
             _LOGGER.warning(
-                "Cellomatics: unexpected dashboardReadRaw response: %r", entries
+                "Cellomatics: unexpected readRaw response: %r", entries
             )
             return
 
         data = dict(self.data)
 
-        for entry in entries[:10]:
+        # The most recent entries are a batch of related lines from the same
+        # heartbeat (task status, BAT, BAL, VEN, STAT, ...). Look at a small
+        # window covering a few recent batches.
+        window = entries[:20]
+
+        for entry in window:
             string_param = entry.get("stringParam") or ""
             match = _STAT_RE.search(string_param)
             if match:
@@ -231,11 +235,20 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
                 data["flow_main"] = int(flow_lh)
                 break
 
-        for entry in entries[:10]:
+        for entry in window:
             string_param = entry.get("stringParam") or ""
             match = _BAT_RE.search(string_param)
             if match:
                 data["battery"] = int(match.group(1))
+                break
+
+        for entry in window:
+            string_param = entry.get("stringParam") or ""
+            if "NO_TASK" in string_param:
+                data["status"] = "idle"
+                break
+            if "Output_" in string_param:
+                data["status"] = "running"
                 break
 
         self.async_set_updated_data(data)

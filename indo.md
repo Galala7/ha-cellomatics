@@ -51,7 +51,7 @@ Site's valve map:
 Single record, `stringParam` = device status code string, e.g. `"ENA:1..OK$ENA:1..$"` (enabled flag + ack), `dateTime` = timestamp of last param update.
 
 #### `/api/readRaw/{siteId}` and `/api/dashboardReadRaw/{siteId}`
-Same underlying hourly/event telemetry stream (dashboard version includes more recent event-level detail). Records are key-value strings with `intParam` indicating message type (2 = status line, 3 = task/event line). Key tokens seen:
+Same underlying hourly/event telemetry stream, but **`dashboardReadRaw` is a filtered subset**: it only includes the task (`NO_TASK`/`Output_...`), `VEN`, and `STAT` lines. `BAT` (battery) and `BAL` lines are **only present in `readRaw`**, so the integration polls `readRaw` for its passive updates. Records are key-value strings with `intParam` indicating message type (2 = status line, 3 = task/event line). Key tokens seen:
 
 - `STAT:bbbbbb,CTR:nnnnnn,L/H:n,ENA:1;` — `STAT` = 6-digit valve on/off bitmask (one digit per valve, 1=open/active); `CTR` = cumulative main flow-meter pulse counter; `L/H` = current flow rate (liters/hour); `ENA` = system enabled flag.
 - `,VEN:111111,D2:0;` — per-valve "vent"/configured-enabled mask (all 1s = all valves configured), `D2` = secondary digital input/output state.
