@@ -10,11 +10,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import CONF_SITE_ID, DOMAIN
+from .const import CONF_SITE_ID, CONF_VALVE_COUNT, DEFAULT_VALVE_COUNT, DOMAIN
 from .coordinator import CellomaticsCoordinator
 from .entity import CellomaticsEntity
-
-VALVE_COUNT = 6
 
 
 async def async_setup_entry(
@@ -23,10 +21,11 @@ async def async_setup_entry(
     """Set up Cellomatics valve binary sensors from a config entry."""
     coordinator: CellomaticsCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     site_id = entry.data[CONF_SITE_ID]
+    valve_count = entry.data.get(CONF_VALVE_COUNT, DEFAULT_VALVE_COUNT)
 
     entities = [
         CellomaticsValveSensor(coordinator, site_id, index)
-        for index in range(VALVE_COUNT)
+        for index in range(valve_count)
     ]
     async_add_entities(entities)
 

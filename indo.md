@@ -41,11 +41,23 @@ Site's valve map:
 | # | Name | Role |
 |---|---|---|
 | 1 | (default "1") | Main zone, flow-metered, runs plan "1.2" |
-| 2 | (default "2") | spare |
+| 2 | (default "2") | Bound to valve 1 (mirrors its state, `Bound:1->2`) |
 | 3 | דשן | Fertilizer/dosing valve |
 | 4 | (default "4") | spare |
 | 5 | שכן | Neighbor zone, plan "5.1", no flow meter |
-| 6 | ראשי | Main supply valve (opens with any zone) |
+| 6 | ראשי | Main supply valve (opens whenever any other zone runs) |
+
+Notes on configuration (controller-side, not currently read/exposed by the
+HA integration - see README TODO section):
+- Controllers support **4-6 valves** (`readValvesCount` returns the
+  configured count for this site). The `STAT`/`VALVES` bitmasks always
+  appear to be 6 digits regardless of configured count.
+- **Valve binding** (`Bound:N->M`): valve M is configured to mirror valve
+  N's open/closed state. On this site, valve 2 is bound to valve 1.
+- **"Main" valve**: exactly one valve (valve 6 here, ראשי) is configured as
+  the main supply valve and opens automatically alongside any other valve
+  that runs. Which valve plays this role is a per-site setting and could in
+  principle be any valve 1-6.
 
 #### `/api/readParams/{siteId}`
 Single record, `stringParam` = device status code string, e.g. `"ENA:1..OK$ENA:1..$"` (enabled flag + ack), `dateTime` = timestamp of last param update.

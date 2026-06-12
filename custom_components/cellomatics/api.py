@@ -78,6 +78,18 @@ class CellomaticsApi:
         data = await self.async_get(f"/api/readValvesCount/{self.site_id}")
         return isinstance(data, list) and len(data) > 0
 
+    async def async_get_valve_count(self) -> int | None:
+        """Read the number of valves configured on this controller (4-6)."""
+        try:
+            data = await self.async_get(f"/api/readValvesCount/{self.site_id}")
+            count = int(data[0]["stringParam"])
+        except (KeyError, IndexError, TypeError, ValueError, CellomaticsAuthError):
+            return None
+
+        if 1 <= count <= 6:
+            return count
+        return None
+
     async def async_get(self, path: str):
         """GET a JSON API endpoint, re-logging in once if the session has expired."""
         for attempt in range(2):

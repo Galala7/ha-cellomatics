@@ -13,7 +13,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import service
 
 from .api import CellomaticsApi, CellomaticsAuthError
-from .const import CONF_SITE_ID, DOMAIN
+from .const import CONF_SITE_ID, CONF_VALVE_COUNT, DEFAULT_VALVE_COUNT, DOMAIN
 from .coordinator import CellomaticsCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +40,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_PASSWORD],
         entry.data[CONF_SITE_ID],
     )
+
+    # Older config entries (created before valve count detection was added)
+    # don't have CONF_VALVE_COUNT stored - detect and backfill it now so the
+    # right number of valve binary sensors (4-6) get created below.
+    if CONF_VALVE_COUNT not in entry.data:
+        valve_count = await api.async_get_valve_count()
+        hass.config_entries.async_update_entry(
+            entry,
+            data={
+                **entry.data,
+                CONF_VALVE_COUNT: valve_count or DEFAULT_VALVE_COUNT,
+            },
+        )
 
     coordinator = CellomaticsCoordinator(hass, api)
 

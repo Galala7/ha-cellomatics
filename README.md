@@ -10,11 +10,13 @@ API.
 
 ## Features
 
-- **Valve states** (open/closed) for all 6 valves, as binary sensors.
+- **Valve states** (open/closed) for each configured valve (controllers
+  support 4-6 valves; the actual count is auto-detected on setup), as binary
+  sensors.
 - **Live flow rates** (main, zone 2, fertilizer) in L/h.
 - **Cumulative flow counters** (main, zone 2, fertilizer) in liters
   (`total_increasing`, compatible with Utility Meter helpers).
-- **Battery voltage** (mV).
+- **Battery voltage** (mV), shown as a diagnostic sensor.
 - **Irrigation status** (idle/running), with a `last_update` attribute
   showing when this sensor's data was last refreshed (from either a
   scheduled or a manually-triggered update).
@@ -90,6 +92,25 @@ Configuration is done entirely via the UI:
 - Login session cookies are held in memory only; the integration
   re-authenticates automatically when the session expires.
 
+### TODO - not yet implemented
+
+These are known configuration features of the Cellomatics controller that
+are **not yet surfaced in Home Assistant**. They're noted here for future
+work:
+
+- **Valve binding** (`Bound:N->M` in the telemetry): a valve can be
+  configured to mirror another valve - e.g. on this site, valve 2 is bound
+  to valve 1, so valve 2 opens/closes whenever valve 1 does. The integration
+  currently just reports the raw per-valve state (which already reflects
+  bound valves following their "leader"); it does not expose or make use of
+  the binding relationship itself (e.g. to label/group bound valves, or
+  read the binding configuration from the API).
+- **Configurable "main" valve**: one valve (valve 6 on this site) is
+  designated as the main supply valve and opens automatically whenever any
+  other valve runs. This is a per-site configuration setting on the
+  controller (any valve could be designated as "main") and is not currently
+  read or exposed by the integration.
+
 ## License
 
-TBD.
+Apache License 2.0 - see [LICENSE](LICENSE).

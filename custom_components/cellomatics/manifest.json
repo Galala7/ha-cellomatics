@@ -9,5 +9,5 @@
   "integration_type": "device",
   "min_ha_version": "2024.1.0",
   "requirements": [],
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
