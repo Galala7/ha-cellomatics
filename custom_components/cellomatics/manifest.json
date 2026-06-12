@@ -1,0 +1,13 @@
+{
+  "domain": "cellomatics",
+  "name": "Cellomatics Irrigation",
+  "codeowners": ["@Galala7"],
+  "config_flow": true,
+  "documentation": "https://github.com/Galala7/ha-cellomatics",
+  "issue_tracker": "https://github.com/Galala7/ha-cellomatics/issues",
+  "iot_class": "cloud_polling",
+  "integration_type": "device",
+  "min_ha_version": "2024.1.0",
+  "requirements": [],
+  "version": "0.1.0"
+}

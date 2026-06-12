@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Cellomatics Irrigation",
+        "description": "Enter your Cellomatics portal credentials and irrigation site ID.",
+        "data": {
+          "username": "Username",
+          "password": "Password",
+          "site_id": "Site ID"
+        }
+      }
+    },
+    "error": {
+      "auth_failed": "Failed to authenticate. Check your username, password and site ID.",
+      "cannot_connect": "Could not connect to the Cellomatics portal. Check your network connection and try again.",
+      "unknown": "Unexpected error. Check the Home Assistant logs for details."
+    },
+    "abort": {
+      "already_configured": "This site is already configured."
+    }
+  }
+}
