@@ -235,6 +235,19 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
                 data["flow_main"] = int(flow_lh)
                 break
 
+            # During a manual/unplanned run, the most recent entry doesn't
+            # have a STAT:...,L/H:... line - it has VALVES:... (current
+            # valve states) and a separate CTR:...,FLOW:... (main flow
+            # meter) in the same line instead.
+            valves_match = _VALVES_RE.search(string_param)
+            if valves_match:
+                data["valves"] = [c == "1" for c in valves_match.group(1)]
+                ctr_match = _CTR_RE.search(string_param)
+                if ctr_match:
+                    data["ctr_main"] = int(ctr_match.group(1))
+                    data["flow_main"] = int(ctr_match.group(2))
+                break
+
         for entry in window:
             string_param = entry.get("stringParam") or ""
             match = _BAT_RE.search(string_param)
@@ -247,7 +260,7 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
             if "NO_TASK" in string_param:
                 data["status"] = "idle"
                 break
-            if "Output_" in string_param:
+            if "Output_" in string_param or "MAN#" in string_param:
                 data["status"] = "running"
                 break
 

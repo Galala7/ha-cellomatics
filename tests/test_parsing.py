@@ -76,6 +76,52 @@ def test_passive_update() -> None:
     assert data.get("status") == "idle"
 
 
+def test_passive_update_running() -> None:
+    """Mirrors CellomaticsCoordinator._async_passive_update parsing during a
+    manual/unplanned irrigation run (samples/readRaw_running.json).
+
+    Captured while a manual 60-minute run was active on valve 1, which
+    auto-opened valves 2 and 6 (VALVES:110001).
+    """
+    entries = load("readRaw_running")
+    data: dict = {}
+    window = entries[:20]
+
+    for entry in window:
+        string_param = entry.get("stringParam") or ""
+        match = _STAT_RE.search(string_param)
+        if match:
+            stat, ctr, flow_lh, _ena = match.groups()
+            data["valves"] = [c == "1" for c in stat]
+            data["ctr_main"] = int(ctr)
+            data["flow_main"] = int(flow_lh)
+            break
+
+        valves_match = _VALVES_RE.search(string_param)
+        if valves_match:
+            data["valves"] = [c == "1" for c in valves_match.group(1)]
+            ctr_match = _CTR_RE.search(string_param)
+            if ctr_match:
+                data["ctr_main"] = int(ctr_match.group(1))
+                data["flow_main"] = int(ctr_match.group(2))
+            break
+
+    for entry in window:
+        string_param = entry.get("stringParam") or ""
+        if "NO_TASK" in string_param:
+            data["status"] = "idle"
+            break
+        if "Output_" in string_param or "MAN#" in string_param:
+            data["status"] = "running"
+            break
+
+    print("passive update (running) ->", data)
+    assert data.get("valves") == [True, True, False, False, False, True]
+    assert data.get("ctr_main") == 181210
+    assert data.get("flow_main") == 15420
+    assert data.get("status") == "running"
+
+
 def test_active_update() -> None:
     """Mirrors CellomaticsCoordinator._async_active_update parsing."""
     resp = load("apiCall")
@@ -127,6 +173,7 @@ def test_daily_summary() -> None:
 
 if __name__ == "__main__":
     test_passive_update()
+    test_passive_update_running()
     test_active_update()
     test_daily_summary()
     print("OK")

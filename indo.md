@@ -108,7 +108,11 @@ Response: a single JSON string (not array-of-objects like other endpoints):
 - `..NO_TASK..` — no irrigation currently running (or shows active task info if one is running).
 
 ### Open items / assumptions to validate later
-- `STAT`/`VALVES` bitmask digit-to-valve ordering (left-to-right vs reversed) not yet 100% confirmed against UI.
+- ~~`STAT`/`VALVES` bitmask digit-to-valve ordering (left-to-right vs reversed) not yet 100% confirmed against UI.~~
+  **Confirmed 2026-06-12**: during a manual run on valve 1 (which auto-opened
+  valves 2 and 6), `readRaw`/`apiCall` showed `VALVES:110001_,_111111` -
+  digit position 1-6 left-to-right = valve 1-6, `1` = open. See
+  `samples/readRaw_running.json` / `samples/apiCall_running.json`.
 - `TE,5,1` value's exact meaning (likely a pulse/time counter, not liters) — could confirm by watching it during/after a שכן-only run.
 - Cookie expiry/refresh cadence for unattended polling needs real-world testing (observed `expires` ~14 days from login).
 - Whether `stringParam` command list in `/api/call` can be trimmed to reduce device load, and what other command tokens exist.
