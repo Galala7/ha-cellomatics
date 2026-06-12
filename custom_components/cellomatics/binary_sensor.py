@@ -27,6 +27,7 @@ async def async_setup_entry(
         CellomaticsValveSensor(coordinator, site_id, index)
         for index in range(valve_count)
     ]
+    entities.append(CellomaticsSuspendedSensor(coordinator, site_id))
     async_add_entities(entities)
 
 
@@ -49,3 +50,27 @@ class CellomaticsValveSensor(CellomaticsEntity, BinarySensorEntity):
         if valves and self._index < len(valves):
             return valves[self._index]
         return None
+
+
+class CellomaticsSuspendedSensor(CellomaticsEntity, BinarySensorEntity):
+    """Whether the controller is currently suspended/disabled (ENA != 1).
+
+    This reflects the controller's overall enabled flag (`ENA:`), which is
+    e.g. set to a non-1 value while irrigation is paused via the portal's
+    "suspend for N days" feature. The API does not expose the remaining
+    suspend duration - only whether it's currently suspended.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.PROBLEM
+    _attr_name = "Suspended"
+
+    def __init__(self, coordinator: CellomaticsCoordinator, site_id: str) -> None:
+        super().__init__(coordinator, site_id)
+        self._attr_unique_id = f"{site_id}_suspended"
+
+    @property
+    def is_on(self) -> bool | None:
+        enabled = self.coordinator.data.get("enabled")
+        if enabled is None:
+            return None
+        return not enabled

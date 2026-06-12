@@ -21,6 +21,10 @@ API.
   showing when this sensor's data was last refreshed (from either a
   scheduled or a manually-triggered update).
 - **Water used today** (liters), derived from the controller's daily report.
+- **Suspended** binary sensor — on when the controller's irrigation has been
+  paused via the portal's "suspend for N days" feature (`ENA != 1`). Note:
+  the API does not expose the remaining suspend duration, only whether it's
+  currently suspended.
 
 ## Services
 
@@ -91,6 +95,9 @@ Configuration is done entirely via the UI:
   made configurable.
 - Login session cookies are held in memory only; the integration
   re-authenticates automatically when the session expires.
+- The "Suspended" sensor reflects only the current on/off state of the
+  controller's enabled flag - it cannot show how many days remain on a
+  portal-initiated suspend, since the API doesn't expose that.
 
 ### TODO - not yet implemented
 

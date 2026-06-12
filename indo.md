@@ -65,13 +65,27 @@ Single record, `stringParam` = device status code string, e.g. `"ENA:1..OK$ENA:1
 #### `/api/readRaw/{siteId}` and `/api/dashboardReadRaw/{siteId}`
 Same underlying hourly/event telemetry stream, but **`dashboardReadRaw` is a filtered subset**: it only includes the task (`NO_TASK`/`Output_...`), `VEN`, and `STAT` lines. `BAT` (battery) and `BAL` lines are **only present in `readRaw`**, so the integration polls `readRaw` for its passive updates. Records are key-value strings with `intParam` indicating message type (2 = status line, 3 = task/event line). Key tokens seen:
 
-- `STAT:bbbbbb,CTR:nnnnnn,L/H:n,ENA:1;` — `STAT` = 6-digit valve on/off bitmask (one digit per valve, 1=open/active); `CTR` = cumulative main flow-meter pulse counter; `L/H` = current flow rate (liters/hour); `ENA` = system enabled flag.
+- `STAT:bbbbbb,CTR:nnnnnn,L/H:n,ENA:n;` — `STAT` = 6-digit valve on/off bitmask (one digit per valve, 1=open/active); `CTR` = cumulative main flow-meter pulse counter; `L/H` = current flow rate (liters/hour); `ENA` = system enabled flag (see below).
 - `,VEN:111111,D2:0;` — per-valve "vent"/configured-enabled mask (all 1s = all valves configured), `D2` = secondary digital input/output state.
 - `,BAT:nnnn;` — battery voltage in mV.
 - `..NO_TASK..$` — no irrigation task currently scheduled/running.
 - `..Output_N_(min,count): m,c,f..` — countdown for output/valve N: `m` = minutes remaining, `c` = pulse count target/limit, `f` = flow counter snapshot.
 - `Bound:1->2` — sequence transition between outputs (e.g., main valve 1 followed by valve 2 step in a multi-step plan).
 - `IO:nn,SPA:nn,STAT:bbbbbb;` — extra digital I/O register and a spare/analog reading, plus the status bitmask.
+- `BOUNDS:..N:M,a,b....OK..$` — reports a configured valve binding (valve `N` bound to valve `M`, with flag values `a,b`). Seen as `BOUNDS:..1:2,1,1....OK..$` on this site (valve 1 -> valve 2 binding).
+- `ENA:n` — system enabled flag. `ENA:1` = normal/enabled. Other values (`0`, `11`, ...) indicate irrigation is currently suspended/disabled — see "Suspend mode" below. When toggling, multiple `ENA:` tokens can appear concatenated in one entry, e.g. `ENA:0..OK$ENA:11..OK$ENA:11..$`.
+
+#### Suspend mode ("vacation"/pause for N days)
+The portal has a feature to suspend all irrigation for a configurable number
+of days. Observed effect on the API (captured 2026-06-12, suspending for 12
+days):
+- `ENA` flips from `1` to `11` (via a transient `0`), in `readRaw`,
+  `readParams`, and the live `/api/call` response (`ENA:11..$`).
+- **No field anywhere exposes the remaining suspend duration or an end
+  date** — `readPlans` is unchanged, and no other endpoint/token carries a
+  day-count. The 12-day duration appears to be tracked server-side only.
+- The integration therefore only exposes a binary "suspended" state
+  (`ENA != 1`), not a countdown.
 
 #### `/api/readPlans/{siteId}`
 Single record, `stringParam` = one or more plan definitions concatenated with `..`, each comma-separated:

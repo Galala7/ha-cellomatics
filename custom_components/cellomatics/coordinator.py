@@ -39,13 +39,19 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-_STAT_RE = re.compile(r"STAT:(\d{6}),CTR:(\d+),L/H:(\d+),ENA:(\d)")
+_STAT_RE = re.compile(r"STAT:(\d{6}),CTR:(\d+),L/H:(\d+),ENA:(\d+)")
 _BAT_RE = re.compile(r"BAT:(\d+)")
 _VALVES_RE = re.compile(r"VALVES:(\d{6})_,_(\d{6})")
 _CTR_RE = re.compile(r"CTR:(\d+),FLOW:(\d+)")
 _CTR2_RE = re.compile(r"CTR2:(\d+),FLOW2:(\d+)")
 _FERT_RE = re.compile(r"FCTR1:(\d+),FLOW:(\d+)")
 _REPORT_RE = re.compile(r"TE,1,2,\d+,([\d.]+),")
+_ENA_RE = re.compile(r"ENA:(\d+)")
+
+# The controller reports ENA:1 when irrigation is enabled/normal. Any other
+# value (e.g. ENA:0 while toggling, ENA:11 while a multi-day "suspend" is
+# active) means irrigation is currently suspended/disabled.
+_ENA_ENABLED_VALUE = "1"
 
 _ACTIVE_COMMAND = "valves;!flow;!flow2;!fert flow;!get ena;!ptime;!status;!"
 
@@ -200,6 +206,10 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
             data["fert_ctr"] = int(match.group(1))
             data["fert_flow"] = int(match.group(2))
 
+        match = _ENA_RE.search(resp)
+        if match:
+            data["enabled"] = match.group(1) == _ENA_ENABLED_VALUE
+
         data["status"] = "idle" if "NO_TASK" in resp else "running"
         data["raw"] = resp
         data["last_update"] = dt_util.now().isoformat()
@@ -255,6 +265,13 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
             match = _BAT_RE.search(string_param)
             if match:
                 data["battery"] = int(match.group(1))
+                break
+
+        for entry in window:
+            string_param = entry.get("stringParam") or ""
+            match = _ENA_RE.search(string_param)
+            if match:
+                data["enabled"] = match.group(1) == _ENA_ENABLED_VALUE
                 break
 
         for entry in window:
