@@ -108,8 +108,14 @@ class CellomaticsStatusSensor(CellomaticsEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
+        attrs = {}
         raw = self.coordinator.data.get("raw")
-        return {"raw": raw} if raw else None
+        if raw:
+            attrs["raw"] = raw
+        last_update = self.coordinator.data.get("last_update")
+        if last_update:
+            attrs["last_update"] = last_update
+        return attrs or None
 
 
 class CellomaticsWaterTodaySensor(CellomaticsEntity, SensorEntity):

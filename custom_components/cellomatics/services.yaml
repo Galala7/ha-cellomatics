@@ -1,0 +1,20 @@
+force_passive_update:
+  name: Force passive update
+  description: >-
+    Immediately performs a passive read (readRaw) of battery level, valve
+    states, main flow, and idle/running status, without waking the cellular
+    controller. Updates sensor.*_status's last_update attribute.
+  target:
+    device:
+      integration: cellomatics
+
+force_active_update:
+  name: Force active update
+  description: >-
+    Immediately performs an active poll (/api/call) of live valve states and
+    flow rates (main, zone 2, fertilizer). This wakes the cellular
+    controller over its cellular link - use sparingly. Updates
+    sensor.*_status's last_update attribute.
+  target:
+    device:
+      integration: cellomatics

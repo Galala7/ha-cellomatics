@@ -202,8 +202,10 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
 
         data["status"] = "idle" if "NO_TASK" in resp else "running"
         data["raw"] = resp
+        data["last_update"] = dt_util.now().isoformat()
 
         self.async_set_updated_data(data)
+        _LOGGER.debug("Cellomatics: active update succeeded: %s", data)
 
     async def _async_passive_update(self) -> None:
         try:
@@ -264,7 +266,20 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
                 data["status"] = "running"
                 break
 
+        data["last_update"] = dt_util.now().isoformat()
+
         self.async_set_updated_data(data)
+        _LOGGER.debug("Cellomatics: passive update succeeded: %s", data)
+
+    async def async_force_passive_update(self) -> None:
+        """Service-triggered immediate passive read (readRaw)."""
+        _LOGGER.debug("Cellomatics: forced passive update requested")
+        await self._async_passive_update()
+
+    async def async_force_active_update(self) -> None:
+        """Service-triggered immediate active poll (/api/call)."""
+        _LOGGER.debug("Cellomatics: forced active update requested")
+        await self._async_active_update()
 
     async def _async_daily_summary(self) -> None:
         now = dt_util.now()
@@ -294,3 +309,4 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
         data = dict(self.data)
         data["water_today"] = round(total, 1)
         self.async_set_updated_data(data)
+        _LOGGER.debug("Cellomatics: daily summary succeeded: water_today=%s", data["water_today"])

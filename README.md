@@ -15,8 +15,29 @@ API.
 - **Cumulative flow counters** (main, zone 2, fertilizer) in liters
   (`total_increasing`, compatible with Utility Meter helpers).
 - **Battery voltage** (mV).
-- **Irrigation status** (idle/running).
+- **Irrigation status** (idle/running), with a `last_update` attribute
+  showing when this sensor's data was last refreshed (from either a
+  scheduled or a manually-triggered update).
 - **Water used today** (liters), derived from the controller's daily report.
+
+## Services
+
+Two services are provided for use in Developer Tools → Actions, or in your
+own automations/scripts:
+
+- **`cellomatics.force_passive_update`** - immediately performs a passive
+  read (`readRaw`) of battery level, valve states, main flow, and
+  idle/running status, without waking the cellular controller. Cheap, safe
+  to call often.
+- **`cellomatics.force_active_update`** - immediately performs an active
+  poll (`/api/call`) of live valve states and flow rates (main, zone 2,
+  fertilizer). This wakes the cellular controller over its cellular link -
+  use sparingly (e.g. right after manually starting/stopping irrigation, to
+  refresh state without waiting for the next scheduled poll).
+
+Both services target the Cellomatics device; if no target is given they
+apply to all configured Cellomatics sites. Successful updates are logged at
+debug level (enable debug logging on the integration to see them).
 
 ## Polling strategy
 
