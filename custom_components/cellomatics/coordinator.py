@@ -229,6 +229,7 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
 
         self.async_set_updated_data(data)
         _LOGGER.debug("Cellomatics: active update succeeded: %s", data)
+        await self._async_passive_update()  # pulls fresh readRaw for battery + updated telemetry
 
     async def _async_passive_update(self) -> None:
         try:
