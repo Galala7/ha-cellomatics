@@ -71,8 +71,7 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
     async def async_setup(self) -> None:
         """Prime the data and start the schedule listeners."""
         await self._async_refresh_windows()
-        await self._async_passive_update()
-        await self._async_daily_summary()
+        await self._async_passive_update()  # also calls _async_daily_summary
 
         self._unsub_tick = async_track_time_change(
             self.hass, self._async_tick, minute=[0, 5, 15, 30, 45], second=10
@@ -82,6 +81,11 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
         )
         self._unsub_report = async_track_time_change(
             self.hass, self._async_report_tick, hour=23, minute=55, second=0
+        )
+        _LOGGER.info(
+            "Cellomatics: coordinator started for site %s; today's run windows: %s",
+            self.api.site_id,
+            self._windows,
         )
 
     def unload(self) -> None:
@@ -107,6 +111,12 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
         local_now = dt_util.now().replace(second=0, microsecond=0, tzinfo=None)
         minute = local_now.minute
         in_window = self._in_window(local_now)
+        _LOGGER.debug(
+            "Cellomatics: tick minute=%d in_window=%s windows=%s",
+            minute,
+            in_window,
+            self._windows,
+        )
 
         if minute == 5:
             # Hourly heartbeat - always, regardless of run windows.
@@ -295,6 +305,7 @@ class CellomaticsCoordinator(DataUpdateCoordinator):
 
         self.async_set_updated_data(data)
         _LOGGER.debug("Cellomatics: passive update succeeded: %s", data)
+        await self._async_daily_summary()
 
     async def async_force_passive_update(self) -> None:
         """Service-triggered immediate passive read (readRaw)."""
