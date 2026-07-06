@@ -61,6 +61,7 @@ class CellomaticsFlowSensor(CellomaticsEntity, SensorEntity):
 class CellomaticsCounterSensor(CellomaticsEntity, SensorEntity):
     """Cumulative flow counter sensor (liters)."""
 
+    _attr_device_class = SensorDeviceClass.WATER
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_native_unit_of_measurement = "L"
 
@@ -134,6 +135,7 @@ class CellomaticsStatusSensor(CellomaticsEntity, SensorEntity):
 class CellomaticsWaterTodaySensor(CellomaticsEntity, SensorEntity):
     """Total water used today (liters), zone 1.2."""
 
+    _attr_device_class = SensorDeviceClass.WATER
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_native_unit_of_measurement = "L"
     _attr_name = "Water Used Today"
