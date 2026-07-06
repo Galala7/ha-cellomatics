@@ -12,7 +12,16 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import CONF_SITE_ID, DOMAIN
+from .const import (
+    CONF_PULSE_FACTOR_FERT,
+    CONF_PULSE_FACTOR_MAIN,
+    CONF_PULSE_FACTOR_ZONE2,
+    CONF_SITE_ID,
+    DEFAULT_PULSE_FACTOR_FERT,
+    DEFAULT_PULSE_FACTOR_MAIN,
+    DEFAULT_PULSE_FACTOR_ZONE2,
+    DOMAIN,
+)
 from .coordinator import CellomaticsCoordinator
 from .entity import CellomaticsEntity
 
@@ -24,13 +33,19 @@ async def async_setup_entry(
     coordinator: CellomaticsCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     site_id = entry.data[CONF_SITE_ID]
 
+    # Options take precedence over initial config data (options flow saves here).
+    cfg = {**entry.data, **entry.options}
+    pf_main = cfg.get(CONF_PULSE_FACTOR_MAIN, DEFAULT_PULSE_FACTOR_MAIN)
+    pf_zone2 = cfg.get(CONF_PULSE_FACTOR_ZONE2, DEFAULT_PULSE_FACTOR_ZONE2)
+    pf_fert = cfg.get(CONF_PULSE_FACTOR_FERT, DEFAULT_PULSE_FACTOR_FERT)
+
     entities = [
         CellomaticsFlowSensor(coordinator, site_id, "flow_main", "Main Flow Rate"),
         CellomaticsFlowSensor(coordinator, site_id, "flow2", "Zone 2 Flow Rate"),
         CellomaticsFlowSensor(coordinator, site_id, "fert_flow", "Fertilizer Flow Rate"),
-        CellomaticsCounterSensor(coordinator, site_id, "ctr_main", "Main Flow Counter"),
-        CellomaticsCounterSensor(coordinator, site_id, "ctr2", "Zone 2 Flow Counter"),
-        CellomaticsCounterSensor(coordinator, site_id, "fert_ctr", "Fertilizer Flow Counter"),
+        CellomaticsCounterSensor(coordinator, site_id, "ctr_main", "Main Flow Counter", pf_main),
+        CellomaticsCounterSensor(coordinator, site_id, "ctr2", "Zone 2 Flow Counter", pf_zone2),
+        CellomaticsCounterSensor(coordinator, site_id, "fert_ctr", "Fertilizer Flow Counter", pf_fert),
         CellomaticsBatterySensor(coordinator, site_id),
         CellomaticsStatusSensor(coordinator, site_id),
         CellomaticsWaterTodaySensor(coordinator, site_id),
@@ -66,16 +81,23 @@ class CellomaticsCounterSensor(CellomaticsEntity, SensorEntity):
     _attr_native_unit_of_measurement = "L"
 
     def __init__(
-        self, coordinator: CellomaticsCoordinator, site_id: str, key: str, name: str
+        self,
+        coordinator: CellomaticsCoordinator,
+        site_id: str,
+        key: str,
+        name: str,
+        pulse_factor: int,
     ) -> None:
         super().__init__(coordinator, site_id)
         self._key = key
+        self._pulse_factor = pulse_factor
         self._attr_name = name
         self._attr_unique_id = f"{site_id}_{key}"
 
     @property
     def native_value(self):
-        return self.coordinator.data.get(self._key)
+        raw = self.coordinator.data.get(self._key)
+        return raw * self._pulse_factor if raw is not None else None
 
 
 class CellomaticsBatterySensor(CellomaticsEntity, SensorEntity):
